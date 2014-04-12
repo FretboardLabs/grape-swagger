@@ -113,6 +113,15 @@ module API
 end
 ```
 
+If you have nested Entities, you can declare them using the ```:entity_dependencies``` property (e.g. if Status includes Substatus):
+
+``` ruby
+desc 'Endpoint', {
+  :entity => API::Entities::Status,
+  :entity_dependencies => [API::Entities::Substatus]
+}
+```
+
 ## Swagger additions
 grape-swagger allows you to add an explanation in markdown in the notes field. Which would result in proper formatted markdown in Swagger UI. The default Swagger UI doesn't allow HTML in the notes field, so you need to use an adapted version of Swagger UI (you can find one at https://github.com/tim-vandecasteele/swagger-ui/tree/vasco).
 
