@@ -143,6 +143,7 @@ module Grape
                   http_codes  = parse_http_codes(route.route_http_codes)
 
                   models << route.route_entity if route.route_entity
+                  models.concat(route.route_entity_dependencies) if route.route_entity_dependencies
 
                   operation = {
                     :produces   => content_types_for(target_class),

@@ -17,6 +17,16 @@ describe "API Models" do
       end
     end
 
+    module Entities
+      class Subthing < Grape::Entity
+        expose :number, :documentation => { :type => "integer", :desc => "Content of thingthing." }
+      end
+
+      class ThingThing < Grape::Entity
+        expose :another, using: Subthing, :documentation => { :type => "Subthing", :desc => "A submodel of thing."}
+      end
+    end
+
     class ModelsApi < Grape::API
       format :json
       desc 'This gets something.', {
@@ -33,6 +43,16 @@ describe "API Models" do
       get "/thing" do
         thing = OpenStruct.new text: 'thing'
         present thing, with: Entities::Some::Thing
+      end
+
+      desc 'This gets thingthing.', {
+        entity: Entities::ThingThing,
+        entity_dependencies: [Entities::Subthing]
+      }
+      get "/thingthing" do
+        subthing = OpenStruct.new number: 1
+        thingthing = OpenStruct.new another: subthing
+        present thingthing, with: Entities::ThingThing
       end
       add_swagger_documentation
     end
@@ -52,6 +72,7 @@ describe "API Models" do
       "apis" => [
         { "path" => "/swagger_doc/something.{format}" },
         { "path" => "/swagger_doc/thing.{format}" },
+        { "path" => "/swagger_doc/thingthing.{format}" },
         { "path" => "/swagger_doc/swagger_doc.{format}" }
       ]
     }
@@ -122,6 +143,52 @@ describe "API Models" do
             "text" => {
               "type" => "string",
               "description" => "Content of something."
+            }
+          }
+        }
+      }
+    }
+  end
+
+  it "should include nested models" do
+    get '/swagger_doc/thingthing.json'
+    JSON.parse(last_response.body).should == {
+      "apiVersion" => "0.1",
+      "swaggerVersion" => "1.2",
+      "basePath" => "http://example.org",
+      "resourcePath" => "",
+      "apis" => [{
+        "path" => "/thingthing.{format}",
+        "operations" => [{
+          "produces" => [
+            "application/json"
+          ],
+          "notes" => "",
+          "type" => "ThingThing",
+          "summary" => "This gets thingthing.",
+          "nickname" => "GET-thingthing---format-",
+          "httpMethod" => "GET",
+          "parameters" => []
+        }]
+      }],
+      "models" => {
+        "ThingThing" => {
+          "id" => "ThingThing",
+          "name" => "ThingThing",
+          "properties" => {
+            "another" => {
+              "type" => "Subthing",
+              "description" => "A submodel of thing."
+            }
+          }
+        },
+        "Subthing" => {
+          "id" => "Subthing",
+          "name" => "Subthing",
+          "properties" => {
+            "number" => {
+              "type" => "integer",
+              "description" => "Content of thingthing."
             }
           }
         }
